@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ match.blue_team }} vs {{ match.red_team }} - 比赛详情{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">比赛列表</a></li>
+        <li class="breadcrumb-item active">比赛详情 #{{ match.id }}</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h2 class="h5 mb-0">
+                <span class="team-blue">{{ match.blue_team }}</span>
+                <span class="vs mx-2">vs</span>
+                <span class="team-red">{{ match.red_team }}</span>
+            </h2>
+            <span class="badge text-bg-info">{{ match.league }}</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 text-muted small">
+            <div class="col-md-4">
+                <strong class="text-dark">比赛时间：</strong>
+                {{ match.match_time.strftime("%Y-%m-%d %H:%M") if match.match_time else "—" }}
+            </div>
+            <div class="col-md-4">
+                <strong class="text-dark">版本号：</strong>{{ match.patch_version or "—" }}
+            </div>
+            <div class="col-md-4">
+                <strong class="text-dark">胜者：</strong>
+                {% if match.winner %}
+                    <span class="text-dark">{{ match.winner }}</span>
+                {% else %}—{% endif %}
+            </div>
+            <div class="col-md-4">
+                <strong class="text-dark">蓝方赔率：</strong>
+                {{ "%.2f"|format(match.blue_odds) if match.blue_odds is not none else "—" }}
+            </div>
+            <div class="col-md-4">
+                <strong class="text-dark">红方赔率：</strong>
+                {{ "%.2f"|format(match.red_odds) if match.red_odds is not none else "—" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100 border-primary">
+            <div class="card-header team-blue">蓝方 BP · {{ match.blue_team }}</div>
+            <div class="card-body">
+                {% if match.blue_heroes %}
+                    {% for hero in match.blue_heroes %}
+                        <span class="hero-chip hero-chip-blue">{{ hero }}</span>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">暂无 BP 数据</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100 border-danger">
+            <div class="card-header team-red">红方 BP · {{ match.red_team }}</div>
+            <div class="card-body">
+                {% if match.red_heroes %}
+                    {% for hero in match.red_heroes %}
+                        <span class="hero-chip hero-chip-red">{{ hero }}</span>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">暂无 BP 数据</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-header">
+        <h3 class="h6 mb-0">分析结果</h3>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="border rounded p-3 h-100 bg-white">
+                    <div class="text-muted small mb-1">阵容类型</div>
+                    <div class="fs-5 fw-semibold">{{ match.lineup_type or "—" }}</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="border rounded p-3 h-100 bg-white">
+                    <div class="text-muted small mb-1">理论结果</div>
+                    <div class="fs-5 fw-semibold text-primary">{{ match.theoretical_result or "—" }}</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="border rounded p-3 h-100 bg-white">
+                    <div class="text-muted small mb-1">实际结果</div>
+                    <div class="fs-5 fw-semibold text-success">{{ match.actual_result or match.winner or "—" }}</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="border rounded p-3 h-100 bg-white">
+                    <div class="text-muted small mb-1">是否异常</div>
+                    {% if match.is_abnormal %}
+                        <span class="badge text-bg-warning fs-6">异常</span>
+                        <p class="small text-muted mb-0 mt-2">理论结果与实际结果不一致</p>
+                    {% else %}
+                        <span class="badge text-bg-success fs-6">正常</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">&larr; 返回列表</a>
+</div>
+{% endblock %}

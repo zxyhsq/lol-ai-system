@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}原始数据查看 - LOL系列赛数据面板系统{% endblock %}
+
+{% block extra_css %}
+<style>
+.json-container {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 1.5rem;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    max-height: 600px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.json-key {
+    color: #e94560;
+}
+.json-string {
+    color: #ffd700;
+}
+.json-number {
+    color: #00d4ff;
+}
+.json-boolean {
+    color: #4caf50;
+}
+.json-null {
+    color: #9e9e9e;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">首页</a></li>
+        <li class="breadcrumb-item active">原始数据查看</li>
+    </ol>
+</nav>
+
+<h2 class="h4 mb-4">原始JSON数据 (最近10条)</h2>
+
+{% if raw_data %}
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <span>数据预览</span>
+        <span class="badge text-bg-info">{{ raw_data|length }} 条记录</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="json-container">
+{{ raw_data | tojson(indent=2) }}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    数据库中暂无数据
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">← 返回首页</a>
+    <a href="{{ url_for('main.database_view') }}" class="btn btn-outline-info">查看数据库</a>
+</div>
+{% endblock %}

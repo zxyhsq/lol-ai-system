@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}{{ series.blue_team }} vs {{ series.red_team }} - 系列赛详情{% endblock %}
+
+{% block extra_css %}
+<style>
+.scoreboard-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.team-display {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.score-display {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.game-panel {
+    background: #1a1a2e;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.game-header {
+    background: #0f3460;
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-body {
+    padding: 1.5rem;
+}
+
+.scoreboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.scoreboard-table th,
+.scoreboard-table td {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    border-bottom: 1px solid #2a2a4a;
+}
+
+.scoreboard-table th {
+    background: #0f3460;
+    color: #e94560;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+}
+
+.scoreboard-table td {
+    color: #e0e0e0;
+}
+
+.scoreboard-table .team-name {
+    text-align: left;
+    font-weight: 600;
+    color: #ffd700;
+}
+
+.scoreboard-table .blue-team {
+    background: rgba(13, 110, 253, 0.1);
+}
+
+.scoreboard-table .red-team {
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.scoreboard-table .champion {
+    font-weight: 600;
+    color: #e94560;
+}
+
+.collapse-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapse-toggle:hover {
+    opacity: 0.8;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">首页</a></li>
+        <li class="breadcrumb-item active">系列赛详情</li>
+    </ol>
+</nav>
+
+<div class="scoreboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4 text-center">
+                <div class="team-display team-blue">{{ series.blue_team }}</div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="score-display">{{ series.blue_score }} - {{ series.red_score }}</div>
+                <div class="text-muted mt-2">{{ series.tournament }}</div>
+                {% if series.winner %}
+                <div class="mt-2">
+                    <span class="badge text-bg-success fs-6">胜者: {{ series.winner }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="team-display team-red">{{ series.red_team }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if series.games %}
+{% for game in series.games %}
+<div class="game-panel">
+    <div class="game-header collapse-toggle" data-bs-toggle="collapse" data-bs-target="#game{{ game.id }}">
+        <div>
+            <span class="badge text-bg-primary me-2">Game {{ game.game_number }}</span>
+            {% if game.duration %}
+            <span class="text-muted">{{ game.duration }}</span>
+            {% endif %}
+        </div>
+        <div>
+            {% if game.winner %}
+            <span class="badge text-bg-success">胜者: {{ game.winner }}</span>
+            {% endif %}
+            <span class="ms-2 text-muted">▼</span>
+        </div>
+    </div>
+    <div class="collapse show" id="game{{ game.id }}">
+        <div class="game-body">
+            {% if game.players %}
+            <table class="scoreboard-table">
+                <thead>
+                    <tr>
+                        <th class="team-name">选手</th>
+                        <th>英雄</th>
+                        <th>召唤师技能</th>
+                        <th>KDA</th>
+                        <th>补刀</th>
+                        <th>金币</th>
+                        <th>推塔</th>
+                        <th>装备</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set blue_players = game.players | selectattr('team', 'equalto', 'blue') | list %}
+                    {% set red_players = game.players | selectattr('team', 'equalto', 'red') | list %}
+                    
+                    {% for i in range(5) %}
+                    <tr class="blue-team">
+                        <td class="team-name">
+                            {% if i < blue_players|length %}
+                            {{ blue_players[i].player_name }}
+                            {% if blue_players[i].role %}
+                            <span class="text-muted small">({{ blue_players[i].role }})</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td class="champion">
+                            {% if i < blue_players|length %}
+                            {{ blue_players[i].champion or '—' }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < blue_players|length %}
+                            {{ blue_players[i].summoner_spells or '—' }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < blue_players|length and blue_players[i].kills is not none %}
+                            {{ blue_players[i].kills }}/{{ blue_players[i].deaths }}/{{ blue_players[i].assists }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < blue_players|length and blue_players[i].cs is not none %}
+                            {{ blue_players[i].cs }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < blue_players|length and blue_players[i].gold is not none %}
+                            {{ blue_players[i].gold }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < blue_players|length and blue_players[i].towers is not none %}
+                            {{ blue_players[i].towers }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < blue_players|length %}
+                            {{ blue_players[i].items or '—' }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    {% for i in range(5) %}
+                    <tr class="red-team">
+                        <td class="team-name">
+                            {% if i < red_players|length %}
+                            {{ red_players[i].player_name }}
+                            {% if red_players[i].role %}
+                            <span class="text-muted small">({{ red_players[i].role }})</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td class="champion">
+                            {% if i < red_players|length %}
+                            {{ red_players[i].champion or '—' }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < red_players|length %}
+                            {{ red_players[i].summoner_spells or '—' }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < red_players|length and red_players[i].kills is not none %}
+                            {{ red_players[i].kills }}/{{ red_players[i].deaths }}/{{ red_players[i].assists }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < red_players|length and red_players[i].cs is not none %}
+                            {{ red_players[i].cs }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < red_players|length and red_players[i].gold is not none %}
+                            {{ red_players[i].gold }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < red_players|length and red_players[i].towers is not none %}
+                            {{ red_players[i].towers }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if i < red_players|length %}
+                            {{ red_players[i].items or '—' }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted text-center">暂无玩家数据</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-info">
+    暂无比赛数据
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">← 返回列表</a>
+</div>
+{% endblock %}

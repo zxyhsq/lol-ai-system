@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}数据库查看 - LOL系列赛数据面板系统{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #0d6efd;
+}
+.stat-label {
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+.series-table {
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">首页</a></li>
+        <li class="breadcrumb-item active">数据库查看</li>
+    </ol>
+</nav>
+
+<h2 class="h4 mb-4">数据库统计</h2>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="stat-card bg-light">
+            <div class="stat-number">{{ series_count }}</div>
+            <div class="stat-label">系列赛总数</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card bg-light">
+            <div class="stat-number">{{ game_count }}</div>
+            <div class="stat-label">比赛局数</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card bg-light">
+            <div class="stat-number">{{ player_count }}</div>
+            <div class="stat-label">玩家记录</div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h4 mb-3">系列赛列表 (最近50条)</h2>
+
+{% if series_list %}
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0 align-middle series-table">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>赛事</th>
+                    <th>对阵</th>
+                    <th>比分</th>
+                    <th>胜者</th>
+                    <th>局数</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in series_list %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    <td><span class="badge text-bg-info">{{ s.tournament }}</span></td>
+                    <td>
+                        <span class="fw-bold">{{ s.blue_team }}</span>
+                        <span class="text-muted mx-1">vs</span>
+                        <span class="fw-bold">{{ s.red_team }}</span>
+                    </td>
+                    <td>
+                        <span class="badge text-bg-primary">{{ s.blue_score }}</span>
+                        <span class="text-muted mx-1">-</span>
+                        <span class="badge text-bg-danger">{{ s.red_score }}</span>
+                    </td>
+                    <td>
+                        {% if s.winner %}
+                        <span class="badge text-bg-success">{{ s.winner }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ s.games|length }}</td>
+                    <td>{{ s.created_at.strftime('%Y-%m-%d %H:%M:%S') if s.created_at else '—' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.series_detail', series_id=s.id) }}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    数据库中暂无系列赛数据
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">← 返回首页</a>
+    <a href="{{ url_for('main.raw_data_view') }}" class="btn btn-outline-info">查看原始数据</a>
+</div>
+{% endblock %}
